@@ -14,7 +14,8 @@ DualRingLED myLights(LED_PIN);
 void setup()
 {
     myLights.begin();
-    myLights.fillAll(CRGB::Blue);
+    myLights.fillOuter(CRGB::Green);
+    myLights.fillInner(CRGB::Red);
 }
 
 void loop()
