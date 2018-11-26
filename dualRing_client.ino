@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 1:  your first fill!
+ * Excercise 3:  clockwise streaks with motion
  */
 
 #include "DualRingLED.h"
@@ -11,14 +11,21 @@
 
 DualRingLED myLights(LED_PIN);
 
+void moveLights( void )
+{
+  myLights.rotateInnerClockwise();
+  myLights.rotateOuterClockwise();  
+}
+
 void setup()
 {
     myLights.begin();
-    myLights.fillOuter(CRGB::Green);
-    myLights.fillInner(CRGB::Red);
+    myLights.makeInnerClockwiseStreak(6, CRGB::Blue, CRGB::Red);
+    myLights.makeOuterClockwiseStreak(9, CRGB::Blue, CRGB::Red);
+    myLights.setRunFunc(moveLights);
 }
 
 void loop()
 {
-    myLights.run();
+    myLights.run(100);
 }
