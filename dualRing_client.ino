@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 1:  your first fill!
+ * Excercise 2:  inner and outer fill!
  */
 
 #include "DualRingLED.h"
