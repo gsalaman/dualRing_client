@@ -6,7 +6,7 @@
 
 #include "DualRingLED.h"
 
-// Hardware definitions for our LED strip.
+// Which pin to use for DualRingLED control
 #define LED_PIN    6
 
 DualRingLED myLights(LED_PIN);
@@ -14,7 +14,7 @@ DualRingLED myLights(LED_PIN);
 void setup()
 {
     myLights.begin();
-    myLights.fillAll(CRGB::DarkGreen);
+    myLights.fillAll(CRGB::Blue);
 }
 
 void loop()
