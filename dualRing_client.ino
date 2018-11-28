@@ -13,18 +13,33 @@ DualRingLED myLights(LED_PIN);
 
 void moveLights( void )
 {
-  myLights.rotateInnerClockwise();
-  myLights.rotateOuterClockwise();  
+  static int phase=0;
+
+  switch (phase)
+  {
+    case 0: 
+    case 2:
+      myLights.rotateInnerClockwise();
+      myLights.rotateOuterClockwise();
+    break;
+
+    case 1:
+      myLights.rotateOuterClockwise();
+    break;
+  }
+  
+  phase++;
+  
+  if (phase == 3) phase = 0;
 }
 
 void initLights( void )
 {
   myLights.fillAll(CRGB::Blue);
   myLights.innerLEDs[0] = CRGB::Green;
-  myLights.innerLEDs[8] = CRGB::Red;
   myLights.outerLEDs[0] = CRGB::Red;
   
-  //myLights.setRunFunc(moveLights);
+  myLights.setRunFunc(moveLights);
 }
 
 void setup()
