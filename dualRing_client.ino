@@ -17,12 +17,20 @@ void moveLights( void )
   myLights.rotateOuterClockwise();  
 }
 
+void initLights( void )
+{
+  myLights.fillAll(CRGB::Blue);
+  myLights.innerLEDs[0] = CRGB::Green;
+  myLights.innerLEDs[8] = CRGB::Red;
+  myLights.outerLEDs[0] = CRGB::Red;
+  
+  //myLights.setRunFunc(moveLights);
+}
+
 void setup()
 {
     myLights.begin();
-    myLights.makeInnerClockwiseStreak(6, CRGB::Blue, CRGB::Red);
-    myLights.makeOuterClockwiseStreak(9, CRGB::Blue, CRGB::Red);
-    myLights.setRunFunc(moveLights);
+    initLights();
 }
 
 void loop()
