@@ -35,6 +35,47 @@ const TProgmemPalette16 my_palette PROGMEM =
 
 };
 
+
+void waterfallPaletteFill( void )
+{
+ 
+  static int paletteIndex = 0;
+  int i=0;
+  int inner=0;
+
+  // First cut:  fill outer with 12 consecutive palette entries.
+  for (i = 0; i < 13; i++)
+  {
+     myLights.outerLEDs[i] = ColorFromPalette(my_palette, i + paletteIndex);
+
+     // fill inner as well here, but skip every third.  Need to match them though.
+     if (i % 3 != 2)
+     {
+       myLights.innerLEDs[inner] = ColorFromPalette(my_palette, i + paletteIndex);
+       inner++;
+     }
+  }
+
+
+  // and mirror the other half...
+  for (i=1; i<12; i++)
+  {
+    myLights.outerLEDs[12 + i] = myLights.outerLEDs[12 - i];
+  }
+
+ 
+  for (i=1; i<8; i++)
+  {
+    myLights.innerLEDs[8 + i] = myLights.innerLEDs[8 - i];
+  }
+
+
+  paletteIndex++;
+
+ 
+}
+
+#if 0
 void waterfallGradFill( CRGB *ledArray, int num, CRGB startPos, CRGB endPos)
 {
   int i;  
@@ -67,11 +108,12 @@ void pulse( void )
 
   start_index++;
 }
+#endif
 
 void initLights( void )
 {
-  myLights.setRunFunc(pulse);
-  
+  myLights.setRunFunc(waterfallPaletteFill);
+ 
 }
 
 void setup()
