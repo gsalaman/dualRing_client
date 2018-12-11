@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 3:  clockwise streaks with motion
+ * Excercise 6:  pulsing the inner ring
  */
 
 #include "DualRingLED.h"
@@ -11,32 +11,44 @@
 #define LED_PIN    6
 
 DualRingLED myLights(LED_PIN);
-int delayTime;
 
-void moveLights( void )
+const TProgmemPalette16 myPalette PROGMEM = 
 {
-  static int phase=0;
-
-  if (phase % 3 == 0) myLights.rotateInnerClockwise();
-  if (phase % 2 == 0) myLights.rotateOuterClockwise();
-
-  phase++;
-  if (phase == 6) phase = 0;
+  CRGB::Red,
+  CRGB::Green,
+  CRGB::Green,
+  CRGB::Red,
   
-}
+  CRGB::Red,
+  CRGB::Green,
+  CRGB::Green,
+  CRGB::Red,
+  
+  CRGB::Red,
+  CRGB::Green,
+  CRGB::Green,
+  CRGB::Red,
+  
+  CRGB::Red,
+  CRGB::Green,
+  CRGB::Green,
+  CRGB::Red
+};
 
+void pulseLights( void )
+{
+  myLights.pulseInner();
+  myLights.rotateOuterCounterClockwise();
+}
 void initLights( void )
 {
-  myLights.fillAll(CRGB::Blue);
-  myLights.innerLEDs[0] = CRGB::Green;
-  myLights.outerLEDs[0] = CRGB::Red;
-
-  myLights.setRunFunc(moveLights);
+  myLights.setPalette(myPalette);
+  myLights.makeOuterCounterClockwiseStreak(8, CRGB::Green, CRGB::Red);
+  myLights.setRunFunc(pulseLights);
 }
 
 void setup()
 {
-    Serial.begin(9600);
     myLights.begin();
     
     initLights();
@@ -45,5 +57,5 @@ void setup()
 
 void loop()
 {
-    myLights.run(100);
+    myLights.run(70);
 }
