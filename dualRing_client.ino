@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 6:  pulsing the inner ring
+ * Excercise 7:  Waterfall pattern, delays, and simple menus.
  */
 
 #include "DualRingLED.h"
@@ -12,50 +12,78 @@
 
 DualRingLED myLights(LED_PIN);
 
-const TProgmemPalette16 myPalette PROGMEM = 
-{
-  CRGB::Red,
-  CRGB::Green,
-  CRGB::Green,
-  CRGB::Red,
-  
-  CRGB::Red,
-  CRGB::Green,
-  CRGB::Green,
-  CRGB::Red,
-  
-  CRGB::Red,
-  CRGB::Green,
-  CRGB::Green,
-  CRGB::Red,
-  
-  CRGB::Red,
-  CRGB::Green,
-  CRGB::Green,
-  CRGB::Red
-};
+#define MIN_DELAY 10
+#define MAX_DELAY 200
 
-void pulseLights( void )
+int loop_delay=100;
+
+void moveLights( void )
 {
-  myLights.pulseInner();
-  myLights.rotateOuterCounterClockwise();
+  myLights.waterfall();
 }
+
 void initLights( void )
 {
-  myLights.setPalette(myPalette);
-  myLights.makeOuterCounterClockwiseStreak(8, CRGB::Green, CRGB::Red);
-  myLights.setRunFunc(pulseLights);
+  loop_delay = 70;
+  myLights.setRunFunc(moveLights);
+}
+
+void print_menu( void )
+{
+  Serial.println("+ to slow down, - to speed up");
+  Serial.print("Current delay: ");
+  Serial.println(loop_delay);
+  
+}
+
+void user_input( void )
+{
+  char c;
+
+  while (Serial.available())
+  {
+    c = Serial.read();
+
+    switch (c)
+    {
+      case '+':
+        if (loop_delay < MAX_DELAY) loop_delay += 10;
+        Serial.print("Current delay: ");
+        Serial.println(loop_delay);   
+      break;
+
+      case '-':
+        if (loop_delay > MIN_DELAY) loop_delay -= 10;
+        Serial.print("Current delay: ");
+        Serial.println(loop_delay);   
+      break;
+
+      case '\n':
+        //do nothing
+      break;
+
+      default:
+        Serial.print("Unrecognized input: ");
+        Serial.println(c);
+        print_menu();
+    }     
+  }
 }
 
 void setup()
 {
+    Serial.begin(9600);
+    
     myLights.begin();
     
     initLights();
+
+    print_menu();
 
 }
 
 void loop()
 {
-    myLights.run(70);
+    user_input();    
+    myLights.run(loop_delay);
 }
