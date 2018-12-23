@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 8:  Expanding on menus.
+ * Excercise 9:  relative motion.
  */
 #include "FastLED.h"
 #include "DualRingLED.h"
@@ -22,7 +22,7 @@ int loop_delay=100;
  * Pattern functions
  *=============================================*/
 
- /*  Pattern: Blackout.  Turn off all leds. */
+/*  Pattern: Blackout.  Turn off all leds. */
 void init_blackout( void )
 {
   myLights.fillAll(CRGB::Black);
@@ -54,7 +54,50 @@ void init_clockwise_unsynced( void )
   myLights.makeInnerClockwiseStreak(6, CRGB::Blue, CRGB::Red);
   myLights.makeOuterBump(4, CRGB::Blue, CRGB::Red);
   myLights.setRunFunc(move_clockwise_unsynced);
+}
+
+/* Tick pattern.  Inner ticks over whenever outer touches it. */
+#define TOUCH_DELAY 3
+int tick_inner_pos;
+int tick_outer_pos;
+
+void init_tick_pattern( void )
+{
+  myLights.makeOuterClockwiseStreak(8, CRGB::Red, CRGB::Green);
+  myLights.fillInner(CRGB::Red);
+  myLights.innerLEDs[0] = CRGB::Green;
   
+  tick_inner_pos = 0;
+  tick_outer_pos = 7;
+
+  myLights.setRunFunc(move_tick_pattern);
+  Serial.println("Tick pattern selected");
+}
+
+void move_tick_pattern( void )
+{
+   static int touch_delay=0;
+    
+    myLights.rotateOuterClockwise();
+    tick_outer_pos++;
+    tick_outer_pos = tick_outer_pos % DUAL_RING_NUM_OUTER;
+ 
+    if (touch_delay == 0)
+    {
+      
+      if (DualRingLED_touching(tick_inner_pos, tick_outer_pos))
+      {
+        myLights.rotateInnerClockwise();
+        tick_inner_pos--;
+        if (tick_inner_pos == -1) tick_inner_pos = DUAL_RING_LAST_INNER; 
+        touch_delay = 1;
+      }
+    }
+    else
+    {
+      touch_delay++;
+      if (touch_delay == TOUCH_DELAY) touch_delay = 0;
+    }
 }
 
 /*=============================================
@@ -68,6 +111,7 @@ void print_menu( void )
   Serial.println("0 to select Blackout pattern");
   Serial.println("1 to select Waterfall pattern");
   Serial.println("2 to select clockwise unsynced");
+  Serial.println("3 to select tick");
 }
 
 void user_input( void )
@@ -102,6 +146,10 @@ void user_input( void )
 
       case '2':
         init_clockwise_unsynced();
+      break;
+
+      case '3':
+        init_tick_pattern();
       break;
         
       case '\n':
