@@ -57,9 +57,10 @@ void init_clockwise_unsynced( void )
 }
 
 /* Tick pattern.  Inner ticks over whenever outer touches it. */
-#define TOUCH_DELAY 3
 int tick_inner_pos;
 int tick_outer_pos;
+#define TICK_INNER_WAIT 3
+int tick_inner_delay=0;
 
 void init_tick_pattern( void )
 {
@@ -69,6 +70,7 @@ void init_tick_pattern( void )
   
   tick_inner_pos = 0;
   tick_outer_pos = 7;
+  tick_inner_delay = 0;
 
   myLights.setRunFunc(move_tick_pattern);
   Serial.println("Tick pattern selected");
@@ -76,27 +78,28 @@ void init_tick_pattern( void )
 
 void move_tick_pattern( void )
 {
-   static int touch_delay=0;
-    
+  
     myLights.rotateOuterClockwise();
     tick_outer_pos++;
     tick_outer_pos = tick_outer_pos % DUAL_RING_NUM_OUTER;
- 
-    if (touch_delay == 0)
+    
+    // without tick_inner_delay, the outer ring would continue to "push" the inner ring, as
+    // they would continue to be "touching".  By putting in a delay, we're
+    // enabling the outer ring to "pass" the inner ring, but still nudge it by one.
+    if (tick_inner_delay == 0)
     {
-      
       if (DualRingLED_touching(tick_inner_pos, tick_outer_pos))
       {
         myLights.rotateInnerClockwise();
         tick_inner_pos--;
         if (tick_inner_pos == -1) tick_inner_pos = DUAL_RING_LAST_INNER; 
-        touch_delay = 1;
+        tick_inner_delay = 1;
       }
     }
     else
     {
-      touch_delay++;
-      if (touch_delay == TOUCH_DELAY) touch_delay = 0;
+        tick_inner_delay++;
+        if (tick_inner_delay == TICK_INNER_WAIT) tick_inner_delay = 0;
     }
 }
 
