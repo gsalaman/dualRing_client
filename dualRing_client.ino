@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 9:  relative motion.
+ * Excercise 10:  colliding in the outer ring
  */
 #include "FastLED.h"
 #include "DualRingLED.h"
@@ -103,6 +103,37 @@ void move_tick_pattern( void )
     }
 }
 
+/* Pattern:  collide outer */
+int clockwise_streak_index;
+int counter_clockwise_streak_index;
+
+void init_collide_outer( void )
+{
+    myLights.fillAll(CRGB::Black);
+    
+    clockwise_streak_index=0;
+    counter_clockwise_streak_index=0;
+
+    myLights.setRunFunc(move_collide_outer);
+    
+    Serial.println("Outer collide selected");
+}
+
+void move_collide_outer( void )
+{
+  myLights.fillOuter(CRGB::Black);
+  
+  myLights.drawOuterCounterClockwiseStreak(counter_clockwise_streak_index, 5, CRGB::Red, CRGB::Blue);
+  myLights.drawOuterClockwiseStreak(clockwise_streak_index, 5, CRGB::Red, CRGB::Blue);
+
+  clockwise_streak_index++;
+  if (clockwise_streak_index > DUAL_RING_NUM_OUTER) clockwise_streak_index = 0;
+
+  counter_clockwise_streak_index--;
+  if (counter_clockwise_streak_index < 0) counter_clockwise_streak_index = DUAL_RING_NUM_OUTER - 1;
+}
+
+
 /*=============================================
  * MENU functions
  *=============================================*/
@@ -115,6 +146,7 @@ void print_menu( void )
   Serial.println("1 to select Waterfall pattern");
   Serial.println("2 to select clockwise unsynced");
   Serial.println("3 to select tick");
+  Serial.println("4 to select collide outer");
 }
 
 void user_input( void )
@@ -153,6 +185,10 @@ void user_input( void )
 
       case '3':
         init_tick_pattern();
+      break;
+
+      case '4':
+        init_collide_outer();
       break;
         
       case '\n':
