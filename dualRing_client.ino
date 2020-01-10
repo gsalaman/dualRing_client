@@ -1,7 +1,7 @@
 /*===========================================================
  * Dual Ring LED Client 
  * 
- * Excercise 10:  colliding in the outer ring
+ * Master branch:  Big menu, Pot & button control
  */
 #include "FastLED.h"
 #include "DualRingLED.h"
@@ -12,10 +12,15 @@
 
 DualRingLED myLights(LED_PIN);
 
+#define POT_PIN A0
+#define BUTTON_PIN 8
+
 #define MIN_LOOP_DELAY 10
 #define MAX_LOOP_DELAY 200
 
 int loop_delay=100;
+
+bool hw_input=true;
 
 
 /*=============================================
@@ -54,6 +59,20 @@ void init_clockwise_unsynced( void )
   myLights.makeInnerClockwiseStreak(6, CRGB::Blue, CRGB::Red);
   myLights.makeOuterBump(4, CRGB::Blue, CRGB::Red);
   myLights.setRunFunc(move_clockwise_unsynced);
+}
+
+/* Pattern:  Opposites  */
+void move_opposites( void )
+{
+  myLights.rotateInnerClockwise();
+  myLights.rotateOuterCounterClockwise();
+}
+
+void init_opposites( void )
+{
+  myLights.makeInnerBump(5, CRGB::Yellow, CRGB::Cyan);
+  myLights.makeOuterCounterClockwiseStreak(8, CRGB::Red, CRGB::Cyan);
+  myLights.setRunFunc(move_opposites);
 }
 
 /* Tick pattern.  Inner ticks over whenever outer touches it. */
@@ -143,10 +162,11 @@ void print_menu( void )
   Serial.print("Current delay: ");
   Serial.println(loop_delay);
   Serial.println("0 to select Blackout pattern");
-  Serial.println("1 to select Waterfall pattern");
-  Serial.println("2 to select clockwise unsynced");
-  Serial.println("3 to select tick");
-  Serial.println("4 to select collide outer");
+  Serial.println("1 to select clockwise unsynced");
+  Serial.println("2 to select opposites");
+  Serial.println("3 to select Waterfall pattern");
+  Serial.println("4 to select tick");
+  Serial.println("5 to select collide outer");
 }
 
 void user_input( void )
@@ -176,18 +196,22 @@ void user_input( void )
       break;
 
       case '1':
-        init_waterfall();
-      break;
-
-      case '2':
         init_clockwise_unsynced();
       break;
 
+      case '2':
+        init_opposites();
+      break;
+
       case '3':
-        init_tick_pattern();
+        init_waterfall();
       break;
 
       case '4':
+        init_tick_pattern();
+      break;
+
+      case '5':
         init_collide_outer();
       break;
         
@@ -203,12 +227,60 @@ void user_input( void )
   }
 }
 
+void check_hw_input( void )
+{
+  int pot_value;
+  static int last_button_state=HIGH;
+  int current_button_state;
+  static int current_mode=1;
+
+  pot_value = analogRead(POT_PIN);
+
+  loop_delay = map(pot_value, 0, 1023, 10, 200);
+
+  current_button_state = digitalRead(BUTTON_PIN);
+
+  if ((last_button_state == HIGH) && (current_button_state == LOW))
+  {
+    // Button press.   Cycle the mode
+    current_mode++;
+    if (current_mode > 5) current_mode = 1;
+    switch (current_mode)
+    {
+      case 1:
+        init_clockwise_unsynced();
+      break;
+
+      case 2:
+        init_opposites();
+      break;
+
+      case 3:
+        init_waterfall();
+      break;
+
+      case 4:
+        init_tick_pattern();
+      break;
+
+      case 5:
+        init_collide_outer();
+      break;
+     
+    }
+
+  }
+  last_button_state = current_button_state;
+  
+}
+
 /*============================================================
  * Main Functions
  *===========================================================*/
 void setup()
 {
     Serial.begin(9600);
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
     myLights.begin();
     init_waterfall();
     print_menu();
@@ -217,6 +289,13 @@ void setup()
 
 void loop()
 {
-    user_input();    
+    if (hw_input)
+    {
+      check_hw_input();
+    }
+    else
+    {
+      user_input();
+    }    
     myLights.run(loop_delay);
 }
